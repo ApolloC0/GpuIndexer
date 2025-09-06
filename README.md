@@ -193,13 +193,6 @@ Check existing GitHub issues
 
 GPU Consultant - Your intelligent assistant for the GPU world 🚀
 
-📞 Contact
-For questions and support:
-
-GitHub Issues: Project Issues
-
-Email: your-email@example.com
-
 🙏 Acknowledgments
 Spring Boot team for the excellent framework
 
