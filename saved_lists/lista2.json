@@ -1,0 +1,15 @@
+{
+  "listName" : "lista2",
+  "gpus" : [ {
+    "name" : "Radeon RX 6600",
+    "shadingUnits" : 1792,
+    "tdp" : "132",
+    "memorySize" : 8.0,
+    "memoryType" : "GDDR6",
+    "memoryBus" : 128,
+    "bandwidth" : 224.0,
+    "fp32" : 8928.0,
+    "baseClock" : 1626,
+    "boostClock" : 2491
+  } ]
+}

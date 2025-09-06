@@ -1,0 +1,13 @@
+/home/spike/Documentos/GpuIndex/src/main/java/GpuIndex/App/GpuConsultantApp.java
+/home/spike/Documentos/GpuIndex/src/main/java/GpuIndex/App/config/AppConfig.java
+/home/spike/Documentos/GpuIndex/src/main/java/GpuIndex/App/controller/CliController.java
+/home/spike/Documentos/GpuIndex/src/main/java/GpuIndex/App/controller/GpuController.java
+/home/spike/Documentos/GpuIndex/src/main/java/GpuIndex/App/model/Gpu.java
+/home/spike/Documentos/GpuIndex/src/main/java/GpuIndex/App/model/GpuList.java
+/home/spike/Documentos/GpuIndex/src/main/java/GpuIndex/App/repository/GpuRepository.java
+/home/spike/Documentos/GpuIndex/src/main/java/GpuIndex/App/service/AdvancedListManager.java
+/home/spike/Documentos/GpuIndex/src/main/java/GpuIndex/App/service/DbService.java
+/home/spike/Documentos/GpuIndex/src/main/java/GpuIndex/App/service/GpuComparisonService.java
+/home/spike/Documentos/GpuIndex/src/main/java/GpuIndex/App/service/GpuFileService.java
+/home/spike/Documentos/GpuIndex/src/main/java/GpuIndex/App/service/GpuListService.java
+/home/spike/Documentos/GpuIndex/src/main/java/GpuIndex/App/session/UserSession.java
