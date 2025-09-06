@@ -1,8 +1,12 @@
 🎮 GPU Consultant
 https://img.shields.io/badge/Java-21%252B-blue
+
 https://img.shields.io/badge/Spring%2520Boot-3.5.5-brightgreen
+
 https://img.shields.io/badge/SQLite-3.40-lightgrey
+
 https://img.shields.io/badge/License-MIT-yellow
+
 https://img.shields.io/badge/Interface-CLI-black
 
 Professional GPU comparison and consultation system with intelligent search, advanced list management, and multi-format export capabilities.
@@ -60,10 +64,12 @@ cd gpu-consultant
 mvn clean package -DskipTests
 
 # Run the JAR
-java -jar target/gpu-consultant-1.0.0.jar
+java -jar target/gpu-indexer-1.0.0.jar
 Direct Execution (Precompiled JAR)
 bash
-java -jar gpu-consultant-1.0.0.jar
+
+java -jar gpu-Indexer-1.0.0.jar
+
 📚 Core Commands
 Search & Consultation
 bash
@@ -88,8 +94,10 @@ list export -o "comparison" -d "~/Documents" # Custom export
 suggest                   # Contextual suggestions
 help                      # Complete help guide
 exit                      # Exit application
+
 🗃️ Project Structure
-text
+
+
 gpu-consultant/
 ├── src/main/java/GpuIndex/App/
 │   ├── controller/        # CLI and REST controllers
@@ -102,6 +110,7 @@ gpu-consultant/
 │   └── gpu_database.json # GPU database
 ├── saved_lists/          # Persisted lists (auto-generated)
 └── target/               # Build output
+
 🎯 Usage Examples
 Typical Workflow:
 bash
