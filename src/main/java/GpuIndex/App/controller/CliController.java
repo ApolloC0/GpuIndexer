@@ -34,10 +34,10 @@ public class CliController {
     @Autowired
     private AdvancedListManager listManager;
 
-    private static final int MAX_LIST_SIZE = 20;
+    private static final int MAX_LIST_SIZE = 10;
 
     // HELP SYSTEM
-    @ShellMethod(key = "fullhelp", value = "Show full help with examples")
+    @ShellMethod(key = "help!", value = "Show full help with examples")
     public String showHelp() {
         StringBuilder sb = new StringBuilder();
         sb.append("\n").append("=".repeat(70)).append("\n");
@@ -118,52 +118,268 @@ public class CliController {
         if (searchResults.size() >= 30) {
             sb.append("\n[WARNING] TOO GENERAL SEARCH\n");
             sb.append("-".repeat(60)).append("\n");
-
-            String lowerQuery = query.toLowerCase();
-
-            if (lowerQuery.contains("radeon") || lowerQuery.contains("amd")) {
-                sb.append("Try:\n");
-                sb.append("  search radeon rx\n");
-                sb.append("  search radeon 6000\n");
-                sb.append("  search radeon 7000\n");
-                sb.append("  search radeon rx 6700\n");
-                sb.append("  search amd rx 7600\n");
-            } else if (lowerQuery.contains("geforce") || lowerQuery.contains("nvidia")) {
-                sb.append("Try:\n");
-                sb.append("  search geforce rtx\n");
-                sb.append("  search rtx 30\n");
-                sb.append("  search rtx 40\n");
-                sb.append("  search rtx 3060\n");
-                sb.append("  search gtx 1660\n");
-            } else if (lowerQuery.equals("rtx")) {
-                sb.append("Try:\n");
-                sb.append("  search rtx 3060\n");
-                sb.append("  search rtx 4070\n");
-                sb.append("  search rtx 3080\n");
-                sb.append("  search rtx 4060\n");
-            } else if (lowerQuery.equals("gtx")) {
-                sb.append("Try:\n");
-                sb.append("  search gtx 1660\n");
-                sb.append("  search gtx 1060\n");
-                sb.append("  search gtx 1070\n");
-                sb.append("  search gtx 1650\n");
-            } else {
-                sb.append("Suggestions to refine your search:\n");
-                sb.append("  Add model: '").append(query).append(" 3060'\n");
-                sb.append("  Specify series: '").append(query).append(" 6000'\n");
-                sb.append("  Include memory: '").append(query).append(" 8gb'\n");
-                sb.append("  Use more specific terms\n");
-            }
-
-            sb.append("-".repeat(60)).append("\n");
+            sb.append(getSearchSuggestions(query));
         }
 
         sb.append("\nUse 'gpu show <number>' to view details.");
-        sb.append("\nUse 'gpu add <number>' to add to list.");
+        sb.append("\nUse 'gpu add <full name>' to add to list.");
 
         return sb.toString();
     }
 
+    private String getSearchSuggestions(String query) {
+        String lowerQuery = query.toLowerCase();
+        StringBuilder suggestions = new StringBuilder();
+
+        if (lowerQuery.contains("radeon") || lowerQuery.contains("amd")) {
+            suggestions.append("Try:\n");
+            suggestions.append("  search radeon rx\n");
+            suggestions.append("  search radeon 6000\n");
+            suggestions.append("  search radeon 7000\n");
+            suggestions.append("  search radeon rx 6700\n");
+            suggestions.append("  search amd rx 7600\n");
+        } else if (lowerQuery.contains("geforce") || lowerQuery.contains("nvidia")) {
+            suggestions.append("Try:\n");
+            suggestions.append("  search geforce rtx\n");
+            suggestions.append("  search rtx 30\n");
+            suggestions.append("  search rtx 40\n");
+            suggestions.append("  search rtx 3060\n");
+            suggestions.append("  search gtx 1660\n");
+        } else if (lowerQuery.equals("rtx")) {
+            suggestions.append("Try:\n");
+            suggestions.append("  search rtx 3060\n");
+            suggestions.append("  search rtx 4070\n");
+            suggestions.append("  search rtx 3080\n");
+            suggestions.append("  search rtx 4060\n");
+        } else if (lowerQuery.equals("gtx")) {
+            suggestions.append("Try:\n");
+            suggestions.append("  search gtx 1660\n");
+            suggestions.append("  search gtx 1060\n");
+            suggestions.append("  search gtx 1070\n");
+            suggestions.append("  search gtx 1650\n");
+        } else {
+            suggestions.append("Suggestions to refine your search:\n");
+            suggestions.append("  Add model: '").append(query).append(" 3060'\n");
+            suggestions.append("  Specify series: '").append(query).append(" 6000'\n");
+            suggestions.append("  Include memory: '").append(query).append(" 8gb'\n");
+            suggestions.append("  Use more specific terms\n");
+        }
+
+        return suggestions.toString();
+    }
+
+    @ShellMethod(key = "results", value = "Show last search results")
+    public String showLastResults() {
+        List<Map<String, String>> lastSearchResults = userSession.getLastSearchResults();
+
+        if (lastSearchResults.isEmpty()) {
+            return "[INFO] No recent search results.\n" +
+                    "Use 'search <terms>' to search GPUs\n" +
+                    "Example: 'search nvidia rtx'";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[LAST SEARCH] '").append(userSession.getLastQuery()).append("'\n");
+        sb.append("-".repeat(60)).append("\n");
+
+        for (int i = 0; i < lastSearchResults.size(); i++) {
+            String gpuName = lastSearchResults.get(i).get("title");
+            String displayName = gpuName.length() > 50 ? gpuName.substring(0, 47) + "..." : gpuName;
+            sb.append(String.format("%2d. %s\n", i + 1, displayName));
+        }
+
+        sb.append("\n[WHAT YOU CAN DO NOW]\n");
+        sb.append("  'gpu show 1' - Show details of first GPU\n");
+        sb.append("  'gpu add 1' - Add first GPU to your list\n");
+        sb.append("  'gpu add \"Exact Name\"' - Add specific GPU\n");
+        sb.append("  'search \"new terms\"' - Perform another search\n");
+
+        return sb.toString();
+    }
+
+    // GPU DETAILS SYSTEM
+    @ShellMethod(key = "gpu show", value = "Show GPU details by search index")
+    public String gpuShow(@ShellOption int index) {
+        List<Map<String, String>> lastSearchResults = userSession.getLastSearchResults();
+
+        if (lastSearchResults.isEmpty()) {
+            return "[ERROR] No recent searches. Use 'search <query>' first.";
+        }
+
+        if (index < 1 || index > lastSearchResults.size()) {
+            return String.format("[ERROR] Invalid index. Must be between 1 and %d.", lastSearchResults.size());
+        }
+
+        String gpuName = lastSearchResults.get(index - 1).get("title");
+
+        try {
+            Gpu gpu = dbService.getGpuDetails(gpuName);
+            return formatGpuDetails(gpu);
+        } catch (IOException e) {
+            return "[ERROR] Error getting details for: '" + gpuName + "'";
+        }
+    }
+
+    // COMPARISON SYSTEM
+    @ShellMethod(key = "gpu compare", value = "Compare two GPUs")
+    public String gpuCompare(
+            @ShellOption(value = {"gpu1"}, arity = Integer.MAX_VALUE) String[] gpu1Parts,
+            @ShellOption(value = {"gpu2"}, arity = Integer.MAX_VALUE) String[] gpu2Parts) {
+
+        String gpu1 = String.join(" ", gpu1Parts);
+        String gpu2 = String.join(" ", gpu2Parts);
+
+        return comparisonService.compareGpus(gpu1, gpu2);
+    }
+
+    // ADVANCED LIST SYSTEM
+    @ShellMethod(key = "list new", value = "Create new list")
+    public String listNew(@ShellOption(arity = Integer.MAX_VALUE) String[] listNameParts) {
+        String listName = String.join(" ", listNameParts);
+        return listManager.createList(listName);
+    }
+
+    @ShellMethod(key = "gpu add", value = "Add GPU to current list")
+    public String listAdd(@ShellOption(arity = Integer.MAX_VALUE) String[] gpuQueryParts) {
+        String gpuQuery = String.join(" ", gpuQueryParts);
+        try {
+            return listManager.addToCurrentList(gpuQuery);
+        } catch (IOException e) {
+            return "[ERROR] Error: " + e.getMessage();
+        }
+    }
+
+    @ShellMethod(key = "list status", value = "Current list status")
+    public String listStatus() {
+        String status = listManager.listStatus();
+
+        if (status.contains("Active list: None")) {
+            return status + "\nUse 'list all' to see saved lists";
+        } else {
+            return status + "\nThis list is saved automatically";
+        }
+    }
+
+    @ShellMethod(key = "list show", value = "Show detailed list content")
+    public String listShow() {
+        return listManager.showListDetails();
+    }
+
+    @ShellMethod(key = "list export", value = "Export list to file")
+    public String listExport(
+            @ShellOption(value = {"-f", "--format"}, defaultValue = "json") String format,
+            @ShellOption(value = {"-o", "--output"}, defaultValue = ShellOption.NULL) String outputFile) {
+
+        try {
+            return listManager.saveList(format, outputFile);
+        } catch (IOException e) {
+            return "[ERROR] Error exporting: " + e.getMessage();
+        }
+    }
+
+    @ShellMethod(key = "gpu remove", value = "Remove GPU from current list")
+    public String listRemove(
+            @ShellOption(value = {"-i", "--index"}, defaultValue = ShellOption.NULL) Integer index,
+            @ShellOption(value = {"-n", "--name"}, arity = Integer.MAX_VALUE, defaultValue = ShellOption.NULL) String[] gpuNameParts,
+            @ShellOption(value = {"-m", "--multiple"}, arity = Integer.MAX_VALUE, defaultValue = ShellOption.NULL) Integer[] indices) {
+
+        int methodCount = 0;
+        if (index != null) methodCount++;
+        if (gpuNameParts != null) methodCount++;
+        if (indices != null && indices.length > 0) methodCount++;
+
+        if (methodCount != 1) {
+            return "[ERROR] Use only one option: -i <index> OR -n <name> OR -m <indices>";
+        }
+
+        if (index != null) {
+            return listManager.removeGpuFromList(index);
+        }
+
+        if (gpuNameParts != null) {
+            String gpuName = String.join(" ", gpuNameParts);
+            return listManager.removeGpuFromList(gpuName);
+        }
+
+        if (indices != null && indices.length > 0) {
+            int[] primitiveIndices = Arrays.stream(indices).mapToInt(Integer::intValue).toArray();
+            return listManager.removeGpusFromList(primitiveIndices);
+        }
+
+        return "[ERROR] Invalid option";
+    }
+
+    @ShellMethod(key = "list clear", value = "Clear current list")
+    public String listClear() {
+        listManager.clearCurrentList();
+        return "[SUCCESS] Current list cleared.";
+    }
+
+    @ShellMethod(key = "list all", value = "Show all saved lists")
+    public String listAll() {
+        return listManager.listAllLists();
+    }
+
+    @ShellMethod(key = "list switch", value = "Switch to an existing list")
+    public String listSwitch(@ShellOption(arity = Integer.MAX_VALUE) String[] listNameParts) {
+        String listName = String.join(" ", listNameParts);
+        return listManager.switchList(listName);
+    }
+
+    @ShellMethod(key = "list delete", value = "Permanently delete a list")
+    public String listDelete(@ShellOption(arity = Integer.MAX_VALUE) String[] listNameParts) {
+        String listName = String.join(" ", listNameParts);
+        return listManager.deleteList(listName);
+    }
+
+    @ShellMethod(key = "list rename", value = "Rename a list")
+    public String listRename(
+            @ShellOption(value = {"old"}, arity = Integer.MAX_VALUE) String[] oldNameParts,
+            @ShellOption(value = {"new"}, arity = Integer.MAX_VALUE) String[] newNameParts) {
+
+        String oldName = String.join(" ", oldNameParts);
+        String newName = String.join(" ", newNameParts);
+        return listManager.renameList(oldName, newName);
+    }
+
+    @ShellMethod(key = "list load", value = "Load lists from files")
+    public String listLoad() {
+        return "[SUCCESS] Lists loaded from files. Use 'list all' to view.";
+    }
+
+    // SYSTEM AND CONFIGURATION
+    @ShellMethod(key = "status", value = "System status")
+    public String getStatus() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[SYSTEM STATUS]\n");
+        sb.append("-".repeat(50)).append("\n");
+        sb.append("Last search: '").append(userSession.getLastQuery().isEmpty() ? "None" : userSession.getLastQuery()).append("'\n");
+        sb.append("Saved results: ").append(userSession.getSearchResultsSize()).append("\n");
+
+        // List status
+        String listStatus = listManager.listStatus();
+        if (listStatus.contains("Active list: none")) {
+            sb.append("Active list: None\n");
+        } else {
+            sb.append(listStatus).append("\n");
+        }
+
+        try {
+            int dbCount = dbService.searchGpuResults("").size();
+            sb.append("Database: ").append(dbCount).append(" GPUs\n");
+        } catch (Exception e) {
+            sb.append("Database: Access error\n");
+        }
+
+        sb.append("-".repeat(50)).append("\n");
+        return sb.toString();
+    }
+
+    @ShellMethod(key = "config clear", value = "Clear configuration")
+    public String configClear() {
+        userSession.clear();
+        return "[SUCCESS] Configuration cleared. Ready for new session.";
+    }
 
     @ShellMethod(key = "exitnow", value = "Exit the system")
     public void exit() {
@@ -171,7 +387,7 @@ public class CliController {
         System.exit(0);
     }
 
-
+    // HELPER METHODS
     private String formatGpuDetails(Gpu gpu) {
         StringBuilder sb = new StringBuilder();
         sb.append("DETAILS FOR: ").append(gpu.getName()).append("\n");
@@ -181,21 +397,26 @@ public class CliController {
         sb.append(String.format("%-20s %s\n", "Architecture:", gpu.getArchitecture()));
         sb.append(String.format("%-20s %s\n", "Release Date:", gpu.getReleaseDate()));
 
+        sb.append("\n[PERFORMANCE]\n");
         sb.append(String.format("%-20s %.2f GFLOPs\n", "FP32:", Optional.ofNullable(gpu.getFp32()).orElse(0.0)));
+
+        sb.append("\n[GRAPHICS]\n");
         sb.append(String.format("%-20s %d MHz\n", "Base Clock:", Optional.ofNullable(gpu.getBaseClock()).orElse(0)));
         sb.append(String.format("%-20s %d MHz\n", "Boost Clock:", Optional.ofNullable(gpu.getBoostClock()).orElse(0)));
 
-        sb.append(String.format("%-20s %.1f GB\n", "Memory Size:", Optional.ofNullable(gpu.getMemorySize()).orElse(0.0)));
-        sb.append(String.format("%-20s %s\n", "Memory Type:", Optional.ofNullable(gpu.getMemoryType()).orElse("N/A")));
-        sb.append(String.format("%-20s %d bits\n", "Memory Bus:", Optional.ofNullable(gpu.getMemoryBus()).orElse(0)));
+        sb.append("\n[MEMORY]\n");
+        sb.append(String.format("%-20s %.1f GB\n", "Size:", Optional.ofNullable(gpu.getMemorySize()).orElse(0.0)));
+        sb.append(String.format("%-20s %s\n", "Type:", Optional.ofNullable(gpu.getMemoryType()).orElse("N/A")));
+        sb.append(String.format("%-20s %d bits\n", "Bus:", Optional.ofNullable(gpu.getMemoryBus()).orElse(0)));
         sb.append(String.format("%-20s %.1f GB/s\n", "Bandwidth:", Optional.ofNullable(gpu.getBandwidth()).orElse(0.0)));
 
+        sb.append("\n[SPECIFICATIONS]\n");
         sb.append(String.format("%-20s %s\n", "Shading Units:", Optional.ofNullable(gpu.getShadingUnits()).map(Object::toString).orElse("N/A")));
         sb.append(String.format("%-20s %s\n", "TDP:", Optional.ofNullable(gpu.getTdp()).orElse("N/A")));
         sb.append(String.format("%-20s %s\n", "Suggested PSU:", Optional.ofNullable(gpu.getSuggestedPsu()).orElse("N/A")));
 
         sb.append("=".repeat(60)).append("\n");
-        sb.append("Use 'list add \"").append(gpu.getName()).append("\" to add to list.");
+        sb.append("Use 'list add \"").append(gpu.getName()).append("\"' to add to list");
 
         return sb.toString();
     }
