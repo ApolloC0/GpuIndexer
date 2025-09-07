@@ -278,36 +278,52 @@ public class CliController {
     }
 
     @ShellMethod(key = "gpu remove", value = "Remove GPU from current list")
-    public String listRemove(
-            @ShellOption(value = {"-i", "--index"}, defaultValue = ShellOption.NULL) Integer index,
-            @ShellOption(value = {"-n", "--name"}, arity = Integer.MAX_VALUE, defaultValue = ShellOption.NULL) String[] gpuNameParts,
-            @ShellOption(value = {"-m", "--multiple"}, arity = Integer.MAX_VALUE, defaultValue = ShellOption.NULL) Integer[] indices) {
+public String listRemove(
+        @ShellOption(value = {"-i", "--index"}, defaultValue = ShellOption.NULL) Integer index,
+        @ShellOption(value = {"-n", "--name"}, arity = Integer.MAX_VALUE, defaultValue = ShellOption.NULL) String[] gpuNameParts,
+        @ShellOption(value = {"-m", "--multiple"}, arity = Integer.MAX_VALUE, defaultValue = ShellOption.NULL) Integer[] indices) {
 
-        int methodCount = 0;
-        if (index != null) methodCount++;
-        if (gpuNameParts != null) methodCount++;
-        if (indices != null && indices.length > 0) methodCount++;
+    int methodCount = 0;
+    if (index != null) methodCount++;
+    if (gpuNameParts != null) methodCount++;
+    if (indices != null && indices.length > 0) methodCount++;
 
-        if (methodCount != 1) {
-            return "[ERROR] Use only one option: -i <index> OR -n <name> OR -m <indices>";
-        }
-
-        if (index != null) {
-            return listManager.removeGpuFromList(index);
-        }
-
-        if (gpuNameParts != null) {
-            String gpuName = String.join(" ", gpuNameParts);
-            return listManager.removeGpuFromList(gpuName);
-        }
-
-        if (indices != null && indices.length > 0) {
-            int[] primitiveIndices = Arrays.stream(indices).mapToInt(Integer::intValue).toArray();
-            return listManager.removeGpusFromList(primitiveIndices);
-        }
-
-        return "[ERROR] Invalid option";
+    // MENSAJE ESPECÍFICO CUANDO NO SE PROPORCIONAN ARGUMENTOS
+    if (methodCount == 0) {
+        return "[ERROR] Missing arguments for 'gpu remove' command\n" +
+               "-".repeat(50) + "\n" +
+               "You must specify HOW to remove the GPU:\n\n" +
+               "OPTIONS:\n" +
+               "  -i <number>     Remove by position number in list\n" +
+               "  -n <name>       Remove by GPU name (partial match)\n" +
+               "  -m <numbers>    Remove multiple GPUs by positions\n\n" +
+               "EXAMPLES:\n" +
+               "  gpu remove -i 1                    (Remove first GPU)\n" +
+               "  gpu remove -n \"RTX 4060\"           (Remove by name)\n" +
+               "  gpu remove -m 1 3 5                (Remove positions 1, 3, and 5)\n\n" +
+               "[TIP] Use 'list show' to see GPU positions in your list";
     }
+
+    if (methodCount > 1) {
+        return "[ERROR] Use only ONE option: -i <index> OR -n <name> OR -m <indices>";
+    }
+
+    if (index != null) {
+        return listManager.removeGpuFromList(index);
+    }
+
+    if (gpuNameParts != null) {
+        String gpuName = String.join(" ", gpuNameParts);
+        return listManager.removeGpuFromList(gpuName);
+    }
+
+    if (indices != null && indices.length > 0) {
+        int[] primitiveIndices = Arrays.stream(indices).mapToInt(Integer::intValue).toArray();
+        return listManager.removeGpusFromList(primitiveIndices);
+    }
+
+    return "[ERROR] Invalid option";
+}
 
     @ShellMethod(key = "list clear", value = "Clear current list")
     public String listClear() {
