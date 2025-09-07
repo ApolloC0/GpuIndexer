@@ -14,7 +14,7 @@
 
     <groupId>GpuIndex.App</groupId>
     <artifactId>Gpu-indexer</artifactId>
-    <version>1.2.0</version>
+    <version>1.2.3</version>
     <packaging>jar</packaging>
 
     <name>GPU Indexer</name>
