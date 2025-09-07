@@ -33,7 +33,7 @@ public class AdvancedListManager {
             Files.createDirectories(Paths.get(LISTS_DIRECTORY));
             loadSavedLists();
         } catch (IOException e) {
-            System.err.println("❌ Error creando directorio de listas: " + e.getMessage());
+            System.err.println("Error: couldn't create a list directory: " + e.getMessage());
         }
     }
 
@@ -51,13 +51,13 @@ public class AdvancedListManager {
                             String listName = file.getName().replace(".json", "");
                             lists.put(listName.toLowerCase(), gpuList.getGpus());
                         } catch (IOException e) {
-                            System.err.println(" Error cargando lista: " + file.getName());
+                            System.err.println(" Error: couldn't load a list " + file.getName());
                         }
                     }
                 }
             }
         } catch (Exception e) {
-            System.err.println("Error inicializando listas guardadas: " + e.getMessage());
+            System.err.println("Error: couldn't start saved lists " + e.getMessage());
         }
     }
 
