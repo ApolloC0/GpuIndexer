@@ -25,8 +25,8 @@ public class GpuListService {
 
     public String addGpuToList(String gpuName) throws IOException {
         if (currentList.size() >= MAX_LIST_SIZE) {
-            return "❌ La lista ya tiene el máximo de " + MAX_LIST_SIZE + " GPUs. " +
-                    "Por favor, crea la lista actual antes de añadir más.";
+            return "This list has reached the maximum of " + MAX_LIST_SIZE + " GPUs. " +
+                    "Please export this list or remove some Gpu before adding more.";
         }
 
         Gpu gpu = dbService.getGpuDetails(gpuName);
@@ -45,13 +45,13 @@ public class GpuListService {
 
         currentList.add(summary);
 
-        return "✅ GPU '" + gpuName + "' añadida a la lista. " +
+        return "GPU '" + gpuName + "' added to the list. " +
                 "Total actual: " + currentList.size() + "/" + MAX_LIST_SIZE;
     }
 
     public String createList(String listName, String format) throws IOException {
         if (currentList.isEmpty()) {
-            return "❌ La lista está vacía. Añade GPUs primero.";
+            return "This list is empty. add some GPU first.";
         }
 
         GpuList gpuList = new GpuList();
@@ -64,13 +64,13 @@ public class GpuListService {
         if (format.equalsIgnoreCase("xlsx")) {
             String fileName = createExcelFile(safeFileName, gpuList);
             currentList.clear();
-            return "✅ Lista Excel '" + listName + "' creada exitosamente. " +
-                    "Archivo: " + fileName + " (" + gpuList.getGpus().size() + " GPUs)";
+            return "Excel file '" + listName + "' succesfully created. " +
+                    "File: " + fileName + " (" + gpuList.getGpus().size() + " GPUs)";
         } else {
             String fileName = createJsonFile(safeFileName, gpuList);
             currentList.clear();
-            return "✅ Lista JSON '" + listName + "' creada exitosamente. " +
-                    "Archivo: " + fileName + " (" + gpuList.getGpus().size() + " GPUs)";
+            return "JSON list '" + listName + "' succesfully created. " +
+                    "File: " + fileName + " (" + gpuList.getGpus().size() + " GPUs)";
         }
     }
 
@@ -101,10 +101,10 @@ public class GpuListService {
             // Crear fila de encabezado
             Row headerRow = sheet.createRow(0);
             String[] headers = {
-                    "Nombre", "Unidades de Sombreado", "TDP (W)",
-                    "Memoria (GB)", "Tipo Memoria", "Bus Memoria (bits)",
-                    "Ancho Banda (GB/s)", "Rendimiento FP32 (GFLOPs)",
-                    "Frecuencia Base (MHz)", "Frecuencia Boost (MHz)"
+                    "Name", "Shading Units", "TDP (W)",
+                    "VRAM(GB)", "Memory Type", "Memory bus(bits)",
+                    "Bandwith(GB/s)", "Performance FP32 (GFLOPs)",
+                    "Base clock (MHz)", "Boost clock (MHz)"
             };
 
             for (int i = 0; i < headers.length; i++) {
@@ -145,7 +145,7 @@ public class GpuListService {
     }
 
     public String getListStatus() {
-        return "📊 Lista actual: " + currentList.size() + "/" + MAX_LIST_SIZE + " GPUs";
+        return "Current list: " + currentList.size() + "/" + MAX_LIST_SIZE + " GPUs";
     }
 
     public void clearCurrentList() {
