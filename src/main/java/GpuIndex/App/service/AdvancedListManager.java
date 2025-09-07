@@ -74,7 +74,7 @@ public class AdvancedListManager {
                 mapper.writerWithDefaultPrettyPrinter().writeValue(outputFile, gpuList);
             }
         } catch (IOException e) {
-            System.err.println("Error guardando lista: " + e.getMessage());
+            System.err.println("Error: couldn't save list " + e.getMessage());
         }
     }
 
@@ -85,30 +85,30 @@ public class AdvancedListManager {
                 Files.delete(file.toPath());
             }
         } catch (IOException e) {
-            System.err.println(" Error eliminando lista: " + e.getMessage());
+            System.err.println(" Error: couldn't remove list " + e.getMessage());
         }
     }
 
     // 📋 MÉTODOS PRINCIPALES
     public String createList(String listName) {
         if (lists.containsKey(listName.toLowerCase())) {
-            return " La lista '" + listName + "' ya existe.";
+            return " List '" + listName + "' already exist.";
         }
         
         lists.put(listName.toLowerCase(), new ArrayList<>());
         currentListName = listName;
         saveListToFile(listName);
-        return "✅ Lista '" + listName + "' creada y seleccionada.";
+        return "List '" + listName + "' was created and is now active.";
     }
 
     public String addToCurrentList(String gpuQuery) throws IOException {
         if (currentListName == null) {
-            return " No hay lista seleccionada. Usa 'list new <nombre>' primero.";
+            return " there is not an active list. Use 'list new <name>' first.";
         }
         
         List<GpuList.GpuSummary> currentList = lists.get(currentListName.toLowerCase());
         if (currentList.size() >= MAX_LIST_SIZE) {
-            return " Lista llena (" + MAX_LIST_SIZE + " GPUs). Usa 'list export' primero.";
+            return " list is full (" + MAX_LIST_SIZE + " GPUs). Use 'list export' first.";
         }
 
         Gpu gpu;
@@ -117,7 +117,7 @@ public class AdvancedListManager {
         } catch (IOException e) {
             var results = dbService.searchGpuResults(gpuQuery);
             if (results.isEmpty()) {
-                return " GPU no encontrada: '" + gpuQuery + "'";
+                return " GPU not found: '" + gpuQuery + "'";
             }
             gpu = dbService.getGpuDetails(results.get(0).get("title"));
         }
@@ -126,38 +126,38 @@ public class AdvancedListManager {
         currentList.add(summary);
         saveListToFile(currentListName);
         
-        return "✅ '" + gpu.getName() + "' añadida a '" + currentListName + "' " +
+        return "'" + gpu.getName() + "' was added to '" + currentListName + "' " +
                "(" + currentList.size() + "/" + MAX_LIST_SIZE + ")";
     }
 
     public String removeGpuFromList(int index) {
         if (currentListName == null) {
-            return " No hay lista seleccionada. Usa 'list new <nombre>' primero.";
+            return " There is not an active list. Use 'list new <name>' first.";
         }
         
         List<GpuList.GpuSummary> currentList = lists.get(currentListName.toLowerCase());
         if (currentList.isEmpty()) {
-            return " La lista '" + currentListName + "' está vacía.";
+            return currentListName + "' is empty.";
         }
         
         if (index < 1 || index > currentList.size()) {
-            return String.format(" Índice inválido. Rango: 1-%d", currentList.size());
+            return String.format(" Invalid index. Range: 1-%d", currentList.size());
         }
         
         GpuList.GpuSummary removedGpu = currentList.remove(index - 1);
         saveListToFile(currentListName);
-        return String.format("✅ GPU '%s' removida de la lista '%s'", 
+        return String.format("GPU '%s' was removed from the list '%s'", 
                             removedGpu.getName(), currentListName);
     }
 
     public String removeGpuFromList(String gpuName) {
         if (currentListName == null) {
-            return " No hay lista seleccionada. Usa 'list new <nombre>' primero.";
+            return " there is not an active list. Use 'list new <name>' first.";
         }
         
         List<GpuList.GpuSummary> currentList = lists.get(currentListName.toLowerCase());
         if (currentList.isEmpty()) {
-            return " La lista '" + currentListName + "' está vacía.";
+            return " The list '" + currentListName + "' its empty.";
         }
         
         Optional<GpuList.GpuSummary> foundGpu = currentList.stream()
@@ -167,27 +167,27 @@ public class AdvancedListManager {
         if (foundGpu.isPresent()) {
             currentList.remove(foundGpu.get());
             saveListToFile(currentListName);
-            return String.format("✅ GPU '%s' removida de la lista '%s'", 
+            return String.format("GPU '%s' removed from the list '%s'", 
                                 foundGpu.get().getName(), currentListName);
         }
         
-        return String.format(" GPU '%s' no encontrada en la lista '%s'",
+        return String.format(" GPU '%s' was not found in the list '%s'",
                             gpuName, currentListName);
     }
 
     public String removeGpusFromList(int[] indices) {
         if (currentListName == null) {
-            return " No hay lista seleccionada. Usa 'list new <nombre>' primero.";
+            return " there is not an active list. Use 'list new <name>' first.";
         }
         
         List<GpuList.GpuSummary> currentList = lists.get(currentListName.toLowerCase());
         if (currentList.isEmpty()) {
-            return " La lista '" + currentListName + "' está vacía.";
+            return " the list '" + currentListName + "' its empty.";
         }
         
         for (int index : indices) {
             if (index < 1 || index > currentList.size()) {
-                return String.format(" Índice %d inválido. Rango: 1-%d", index, currentList.size());
+                return String.format(" Index %d invalid. Range: 1-%d", index, currentList.size());
             }
         }
         
@@ -201,18 +201,18 @@ public class AdvancedListManager {
         }
         
         saveListToFile(currentListName);
-        return String.format("✅ %d GPUs removidas: %s", 
+        return String.format("%d GPUs removed: %s", 
                             indices.length, String.join(", ", removedGpus));
     }
 
     public String saveList(String format, String customFileName) throws IOException {
         if (currentListName == null) {
-            return " No hay lista seleccionada.";
+            return " there is not a selected list.";
         }
         
         List<GpuList.GpuSummary> currentList = lists.get(currentListName.toLowerCase());
         if (currentList.isEmpty()) {
-            return " La lista está vacía.";
+            return " List empty.";
         }
 
         GpuList gpuList = new GpuList();
@@ -223,10 +223,10 @@ public class AdvancedListManager {
         
         if (format.equalsIgnoreCase("xlsx")) {
             String xlsxFile = createExcelFile(fileName, gpuList);
-            return "✅ Excel exported to: " + xlsxFile;
+            return "Excel exported to: " + xlsxFile;
         } else {
             String jsonFile = createJsonFile(fileName, gpuList);
-            return "✅ JSON exported to: " + jsonFile;
+            return "JSON exported to: " + jsonFile;
         }
     }
 
@@ -236,7 +236,7 @@ public class AdvancedListManager {
         }
         
         currentListName = listName;
-        return "✅ List name changed to: '" + listName + "' (" +
+        return "List name changed to: '" + listName + "' (" +
                lists.get(listName.toLowerCase()).size() + " GPUs)";
     }
 
@@ -296,8 +296,8 @@ public class AdvancedListManager {
                 indicator, name, gpuCount, gpuCount != 1 ? "s" : ""));
         }
         
-        sb.append("\n💡 Use 'list switch <name>' to switch active list");
-        sb.append("\n💡 Use 'list delete <name>' to delete a list");
+        sb.append("\n Use 'list switch <name>' to switch active list");
+        sb.append("\n Use 'list delete <name>' to delete a list");
         
         return sb.toString();
     }
@@ -311,7 +311,7 @@ public class AdvancedListManager {
         StringBuilder sb = new StringBuilder();
         sb.append("LIST: ").append(currentListName).append("\n");
         sb.append("GPUs: ").append(currentList.size()).append("/").append(MAX_LIST_SIZE).append("\n");
-        sb.append("➖➖➖➖➖➖➖➖➖➖➖➖➖\n");
+        sb.append("==============================================================================\n");
         
         if (currentList.isEmpty()) {
             sb.append("The list is empty\n");
@@ -330,8 +330,8 @@ public class AdvancedListManager {
             }
         }
         
-        sb.append("\n💡 Use 'list show' to see full list with details");
-        sb.append("\n💡 Use 'list export' to save the list to a file");
+        sb.append("\n Use 'list show' to see full list with details");
+        sb.append("\n Use 'list export' to save the list to a file");
         
         return sb.toString();
     }
@@ -362,8 +362,8 @@ public class AdvancedListManager {
                 gpu.getBoostClock() != null ? gpu.getBoostClock() : 0));
         }
         
-        sb.append("💡 Use 'list remove -i <número>' to remove a GPU from list");
-        sb.append("\n💡 Use 'list export' to export a list to a file");
+        sb.append("\n Use 'list remove -i <number>' to remove a GPU from list");
+        sb.append("\n Use 'list export' to export a list to a file");
         return sb.toString();
     }
 
