@@ -37,11 +37,11 @@ public class CliController {
     private static final int MAX_LIST_SIZE = 10;
 
     // HELP SYSTEM
-    @ShellMethod(key = "help!", value = "Show full help with examples")
+    @ShellMethod(key = "fullhelp", value = "Show full help with examples")
     public String showHelp() {
         StringBuilder sb = new StringBuilder();
         sb.append("\n").append("=".repeat(70)).append("\n");
-        sb.append("                    GPU INDEXER - FULL GUIDE\n");
+        sb.append("                GPU INDEXER - FULL GUIDE\n");
         sb.append("=".repeat(70)).append("\n\n");
 
         sb.append("[SEARCH AND QUERY]\n");
