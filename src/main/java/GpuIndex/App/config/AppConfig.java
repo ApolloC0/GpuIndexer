@@ -19,7 +19,7 @@ public class AppConfig {
         System.out.println();
         System.out.println("================================================");
         System.out.println("           GPU INDEX MANAGER");
-        System.out.println("           By ApolloC0 (Manuel Rivas)");
+        System.out.println("           By ApolloC0 ");
         System.out.println("================================================");
         System.out.println();
         System.out.println("Starting GPU Indexer App...");
@@ -44,10 +44,10 @@ public class AppConfig {
         System.out.println(" list remove <name>          Delete list permanently");
         System.out.println(" list rename <old> <new>     Rename list");
         System.out.println(" list load                   Reload lists from files");
-        System.out.println(" help!                       Full help");
+        System.out.println(" fullhelp                    Full help");
         System.out.println(" suggest                     Contextual suggestions");
         System.out.println(" status                      System status");
-        System.out.println(" exit!                       Exit");
+        System.out.println(" exitnow                      Exit");
         System.out.println("================================================");
     }
 }
