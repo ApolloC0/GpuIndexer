@@ -99,6 +99,6 @@ public class DbService {
         return gpuDatabase.stream()
                 .filter(gpu -> gpu.getName().equalsIgnoreCase(gpuName))
                 .findFirst()
-                .orElseThrow(() -> new IOException("GPU no encontrada en la base de datos local: " + gpuName));
+                .orElseThrow(() -> new IOException("GPU not found in the local data base: " + gpuName));
     }
 }

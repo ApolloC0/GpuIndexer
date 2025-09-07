@@ -1,8 +1,8 @@
+GpuIndex/App/GpuIndexApp.class
 GpuIndex/App/controller/GpuController.class
 GpuIndex/App/service/AdvancedListManager.class
 GpuIndex/App/model/Gpu.class
 GpuIndex/App/model/GpuList$GpuSummary.class
-GpuIndex/App/GpuConsultantApp.class
 GpuIndex/App/service/GpuFileService.class
 GpuIndex/App/model/GpuList.class
 GpuIndex/App/session/UserSession.class
